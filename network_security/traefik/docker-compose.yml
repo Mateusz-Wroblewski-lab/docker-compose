@@ -1,0 +1,61 @@
+version: '3.5'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    security_opt:
+      - no-new-privileges=true
+    networks:
+      - outside # connetion to Cloudflare tunnel
+      - inside # docker network for all docker apss
+    ports:
+      - host-ip:80:80
+      - host-ip:81:81 # external http
+      - host-ip:443:443
+      - host-ip:444:444 # external https
+      - host-ip:8080:8080 #dashboard enable recomended only for development mode purposes
+    environment:
+      - CF_API_EMAIL=clodflare@email.com # your cloudflare email
+      - CF_DNS_API_TOKEN=your-cloudflare-api-token
+      - DOCKER_HOST=dockersocket # more secure method
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./traefik:/etc/traefik/
+      - ./traefik/acme.json:/acme.json
+      - /var/log/traefik/:/var/log/traefik/
+# work in progress      - ./certificates:/certificates.yaml:ro
+# work in progress     - ./origin-certificates/:/origin-certificates:ro 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entryPoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.yourdomain.com`)"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=secret-password"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.yourdomain.com`)"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      # I am using Clodflare dns provider
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=yourdomain.com"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.yourdomain.com"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+    restart: unless-stopped
+    depends_on:
+      - dockersocket
+
+  dockersocket:
+     container_name: dockersocket
+     image: tecnativa/docker-socket-proxy
+     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+     networks:
+      - inside
+     environment:
+      CONTAINERS: 1
+      POST: 0
+     privileged: true
+     restart: unless-stopped
