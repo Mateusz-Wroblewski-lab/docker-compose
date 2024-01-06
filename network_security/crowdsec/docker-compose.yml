@@ -1,3 +1,9 @@
+version: '3.5' # in my case
+
+networks:
+  inside:
+    external: true
+    
 crowdsec:
     image: crowdsecurity/crowdsec:latest
     container_name: crowdsec
