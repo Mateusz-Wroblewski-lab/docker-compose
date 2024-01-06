@@ -16,3 +16,17 @@ crowdsec:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+
+bouncer-traefik:
+    image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
+    container_name: traefik-bouncer
+    environment:
+      CROWDSEC_BOUNCER_API_KEY: your-strong-api-key
+      CROWDSEC_AGENT_HOST: crowdsec:8080 # exposed crowdsec port
+    networks:
+      - inside
+    depends_on:
+      - crowdsec
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
