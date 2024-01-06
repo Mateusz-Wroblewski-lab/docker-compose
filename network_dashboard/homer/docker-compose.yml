@@ -1,0 +1,23 @@
+version: "2"
+
+networks:
+  inside:
+    external: true
+    
+services:
+  homer:
+    image: b4bz/homer
+    #To build from source, comment previous line and uncomment below
+    #build: .
+    container_name: homer
+    volumes:
+      - ./assets:/www/assets
+    ports:
+      - your-host-ip:8680:8080
+    environment:
+      - USER= #your-user-name
+      - GROUP= #your-groups ex. admin, family
+      - UID=1000
+      - GID=1000
+    networks:
+      - inside
