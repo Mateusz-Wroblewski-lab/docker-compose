@@ -1,0 +1,108 @@
+---
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# -- (Optional) Change Log Level and Format here...
+log:
+  level: ERROR
+  format: common
+  filePath: /var/log/traefik/traefik.log
+#    
+# -- (Optional) Enable Accesslog and change Format here...
+accessLog:
+  filePath: /var/log/crowdsec/traefik.log
+  bufferingSize: 50
+
+accesslog:
+   format: common
+   filePath: /var/log/traefik/access.log
+
+# -- (Optional) Enable API and Dashboard here, don't do in production
+api:
+   dashboard: true
+   insecure: true
+
+# -- Change EntryPoints here...
+entryPoints:
+  web:
+    address: :80
+    # -- (Optional) Redirect all HTTP to HTTPS
+    http:
+      middlewares:
+        - securityHeaders@file
+        - crowdsec-bouncer@file
+      redirections:
+         entryPoint:
+           to: websecure
+           scheme: https
+  websecure:
+    address: :443
+    http:  
+      tls:
+        # Generate a wildcard domain certificate
+        certResolver: letsencrypt
+        domains:
+          - main: domain.com
+            sans:
+              - '*.domains.com'
+      middlewares:
+        - securityHeaders@file
+        - crowdsec-bouncer@file  
+
+# -- Enternal
+  web-ext:
+    address: :81
+    http:
+      middlewares:
+        - securityHeaders@file
+        - crowdsec-bouncer@file  
+    # -- (Optional) Redirect all HTTP to HTTPS
+      redirections:
+         entryPoint:
+           to: websecure-ext
+           scheme: https
+  websecure-ext:
+    address: :444
+    http:
+      tls:
+        # Generate a wildcard domain certificate
+        certResolver: letsencrypt
+        domains:
+          - main: domein.com
+            sans:
+              - '*.domain.com'
+      middlewares:
+        - securityHeaders@file
+        - crowdsec-bouncer@file  
+
+# -- Configure your CertificateResolver here...
+certificatesResolver:
+   production:
+     acme:
+       email: your@gmail.com
+       storage: /etc/traefik/certs/acme.json
+       caServer: "https://acme-v02.api.letsencrypt.org/directory"
+
+#       -- (Optional) Configure DNS Challenge
+       dnsChallenge:
+         provider: cloudflare
+         resolvers:
+           - "1.1.1.1:53"
+           - "8.8.8.8:53"
+
+# -- (Optional) Disable TLS Cert verification check
+serversTransport:
+   insecureSkipVerify: true
+
+providers:  
+  docker:
+    watch: true
+    network: inside
+    defaultRule: "Host(`{{ index .Labels \"com.docker.compose.service\"}}.domain.com`)"
+    swarmModeRefreshSeconds: 15s
+    exposedByDefault: false
+
+  file:
+    filename: /etc/traefik/config.yml 
+    watch: true
