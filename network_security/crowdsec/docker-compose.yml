@@ -3,8 +3,8 @@ version: '3.5' # in my case
 networks:
   inside:
     external: true
-    
-crowdsec:
+services:    
+  crowdsec:
     image: crowdsecurity/crowdsec:latest
     container_name: crowdsec
     expose:
@@ -13,8 +13,8 @@ crowdsec:
       GID: "${GID-1000}"
       COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/nextcloud"
     volumes:
-      - ./crowdsec:/etc/crowdsec/
-      - ./crowdsec/db:/var/lib/crowdsec/data/
+      - ./config:/etc/crowdsec/
+      - ./db:/var/lib/crowdsec/data/
       - /var/log/auth.log:/logs/auth.log:ro
       - /var/log/crowdsec:/var/log/crowdsec:ro
     networks:
@@ -23,12 +23,13 @@ crowdsec:
       - no-new-privileges:true
     restart: unless-stopped
 
-bouncer-traefik:
+  bouncer-traefik:
     image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
     container_name: traefik-bouncer
     environment:
-      CROWDSEC_BOUNCER_API_KEY: your-strong-api-key
+      CROWDSEC_BOUNCER_API_KEY: your api key
       CROWDSEC_AGENT_HOST: crowdsec:8080 # exposed crowdsec port
+      GIN_MODE: release
     networks:
       - inside
     depends_on:
