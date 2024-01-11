@@ -1,0 +1,9 @@
+filenames:
+  - /var/log/crowdsec/traefik.log
+labels:
+  type: traefik
+---
+filenames:
+  - /var/log/auth.log
+labels:
+  type: syslog
