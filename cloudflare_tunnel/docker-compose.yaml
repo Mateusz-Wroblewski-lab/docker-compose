@@ -1,0 +1,17 @@
+version: "3.9"
+
+networks:
+  outside:
+    driver: bridge
+    external: true
+
+services:
+  cloudflaretunnel:
+    container_name: cloudflaretunnel
+    image: cloudflare/cloudflared:2023.10.0
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=your cloudflare tunnel token
+    command: tunnel --no-autoupdate run
+    networks:
+      - outside
