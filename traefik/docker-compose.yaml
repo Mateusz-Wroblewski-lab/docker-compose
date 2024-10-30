@@ -1,13 +1,4 @@
-networks:
-# cloudflare to traefik
-  outside:
-    driver: bridge
-    external: true
-# traefik to dockersocket
-  inside:
-    driver: bridge
-    external: true
-
+---
 services:
   traefik:
     image: traefik:latest
@@ -25,16 +16,24 @@ services:
       - Your-ip:8080:8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - ./config/http/:/etc/traefik/http/     # http routers, services, middlewares
-#      - ./config/tcp/:/etc/traefik/tcp/     `# tcp routers, services, middlewares
-#      - ./config/udp/:/etc/traefik/udp/      # udp routers, services, middlewares
-      - ./config/certs/:/etc/traefik/certs/
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro  # Static config: main config
+      - ./config/rules/:/etc/traefik/rules/ # Routers, Services, Middlewares, Certificates(Stores options)
+      - ./config/certs/:/etc/traefik/certs/ # Certs directory 
     environment:
-      DOCKER_HOST: dockersocket
+      DOCKER_HOST: dockersocket # External docker socket as docker
       CF_API_EMAIL: mail@mail.com
       CF_DNS_API_TOKEN: YOUR-CF_DNS_API_TOKEN
     networks:
       - inside
       - outside
     restart: unless-stopped
+
+networks:
+# cloudflare to traefik
+  outside:
+    driver: bridge
+    external: true
+# traefik to dockersocket
+  inside:
+    driver: bridge
+    external: true
