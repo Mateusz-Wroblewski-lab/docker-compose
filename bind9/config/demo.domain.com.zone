@@ -1,0 +1,25 @@
+$TTL 2d
+
+$ORIGIN demo.domain.com.
+
+@               IN      SOA     ns.demo.domain.com. info.domain.com. (
+                                2024103000      ; serial
+                                12h             ; refresh
+                                15m             ; retry
+                                3w              ; expire
+                                2h              ; minimum ttl
+                                )
+
+                IN      NS      ns.demo.domain.com.
+
+ns              IN      A       192.168.0.1  # your dns server ip
+
+; -- add dns records below
+
+srv-prod-1      IN      A       10.20.0.2
+srv-prod-2      IN      A       10.20.0.3
+
+; -- demo servers
+
+srv-demo-2      IN      A       192.168.0.10  # your dns server ip
+*.srv-demo-2    IN      A       192.168.0.10  # your dns server ip
