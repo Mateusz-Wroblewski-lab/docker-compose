@@ -1,0 +1,23 @@
+---
+services:
+  bind9:
+    image: docker.io/ubuntu/bind9:9.18-23.10_edge
+    container_name: bind9-demo
+    network_mode: host
+    # networks:
+    #   - inside
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      - BIND9_user=bind
+      - TZ=Europe/Berlin
+    volumes:
+      - ./config:/etc/bind
+      - ./cache:/var/cache/bind
+      - ./records:/var/lib/bind
+    restart: unless-stopped
+
+# networks:
+#   inside:
+#     external: true
