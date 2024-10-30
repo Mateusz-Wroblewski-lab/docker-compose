@@ -9,10 +9,21 @@ services:
     command: tunnel --no-autoupdate run
     networks:
       - outside
+    restart: unless-stopped
 
-
-
-      
+  dockersocket:
+    image: tecnativa/docker-socket-proxy
+    container_name: dockersocket
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - inside
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    privileged: true
+    restart: unless-stopped
+    
   traefik:
     image: traefik:latest
     container_name: traefik
@@ -36,19 +47,21 @@ services:
       DOCKER_HOST: dockersocket # External docker socket as docker
       CF_API_EMAIL: mail@mail.com
       CF_DNS_API_TOKEN: YOUR-CF_DNS_API_TOKEN
+    depends_on:
+      cloudflaretunnel:
+        condition: service_healthy
+        restart: true
+      dockersocket:
+        condition: service_started
     networks:
       - inside
       - outside
     restart: unless-stopped
 
-
-
 networks:
 # cloudflare to traefik
   outside:
-    driver: bridge
     external: true
 # traefik to dockersocket
   inside:
-    driver: bridge
     external: true
