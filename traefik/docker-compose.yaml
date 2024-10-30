@@ -1,5 +1,18 @@
 ---
 services:
+  cloudflaretunnel:
+    container_name: cloudflaretunnel
+    image: cloudflare/cloudflared:2023.10.0
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=your cloudflare tunnel token
+    command: tunnel --no-autoupdate run
+    networks:
+      - outside
+
+
+
+      
   traefik:
     image: traefik:latest
     container_name: traefik
@@ -27,6 +40,8 @@ services:
       - inside
       - outside
     restart: unless-stopped
+
+
 
 networks:
 # cloudflare to traefik
