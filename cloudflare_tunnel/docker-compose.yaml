@@ -1,10 +1,4 @@
-version: "3.9"
-
-networks:
-  outside:
-    driver: bridge
-    external: true
-
+---
 services:
   cloudflaretunnel:
     container_name: cloudflaretunnel
@@ -15,3 +9,6 @@ services:
     command: tunnel --no-autoupdate run
     networks:
       - outside
+networks:
+  outside:
+    external: true
