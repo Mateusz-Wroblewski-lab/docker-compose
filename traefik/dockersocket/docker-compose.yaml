@@ -1,0 +1,18 @@
+---
+services:
+  dockersocket:
+    image: tecnativa/docker-socket-proxy
+    container_name: dockersocket
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - inside
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    privileged: true
+    restart: unless-stopped
+networks:
+  inside:
+    driver: bridge
+    external: true
